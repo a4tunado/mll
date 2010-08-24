@@ -1,6 +1,6 @@
 #include <iostream>
 #include <stdexcept>
-#include <string>
+#include <string.h>
 
 #include "classifier.h"
 #include "cross_validation.h"
@@ -14,6 +14,67 @@ using std::vector;
 using std::string;
 
 using namespace mll;
+
+struct ProgramArg {
+    const char* short_;
+    const char* long_;
+    const char* description_;
+    const char* default_;
+};
+
+ProgramArg g_args[] = {
+    { "-?", "--help", "Display this message", NULL }
+    , { "-c", "--classifier"          , "Classifier name"                       , NULL }
+    , { "-d", "--dataFile"            , "Received data file path"               , NULL }
+    , { "-l", "--learningIndexes"     , "Leraning indexes file path"            , NULL }
+    , { "-t", "--testIndexes"         , "Test indexes file path"                , NULL }
+    , { "-p", "--penalies"            , "Penalty matrix file path"              , NULL }
+    , { "-r", "--algProperties"       , "Classifier properties output file path", NULL }
+    , { "-T", "--targetOutput"        , "Target output file path"               , NULL }
+    , { "-C", "--confidenceOutput"    , "Confidence output file path"           , NULL }
+    , { "-F", "--featureWeightsOutput", "Feature weights output file path"      , NULL }
+    , { "-W", "--objectWeightsOutput" , "Object weights output file path"       , NULL }
+    , { NULL }
+};
+
+enum {
+    ARG_HELP = 0
+    , ARG_CLASSIFIER
+    , ARG_DATAFILE
+    , ARG_LEARNINGINDEXES
+    , ARG_TESTINDEXES
+    , ARG_PENALTIES
+    , ARG_ALGPROPERTIES
+    , ARG_TARGETOUTPUT
+    , ARG_CONFIDENCEOUTPUT
+    , ARG_FEATUREWEIGHTSOUTPUT
+    , ARG_OBJECTWEIGHTSOUTPUT
+};
+
+const char** GetProgramArg(int argc, const char* argv[], const ProgramArg& arg) {
+    const char** argv_it = argv;
+    const char** argv_end = argv + argc;
+    unsigned int short_len = strlen(arg.short_);
+    unsigned int long_len = strlen(arg.long_);
+    while (++argv_it != argv_end) {
+        if (!strncmp(*argv_it, arg.short_, short_len)
+            || !strncmp(*argv_it, arg.long_, long_len)) {
+            break;
+        }
+    }    
+    return argv_it == argv_end ? NULL : argv_it;
+}
+
+const char* GetProgramArgValue(int argc, const char* argv[], const ProgramArg& arg) {
+    const char** argv_it = GetProgramArg(argc, argv, arg);
+    if (argv_it++) {
+        const char** argv_end = argv + argc;
+        if (argv_it != argv_end && (*argv_it)[0] != '-') {
+            return *argv_it;
+        }
+    }
+    return arg.default_;
+}
 
 void ListClassifiers() {
     cout << "Registered classifiers:" << endl;
@@ -80,9 +141,18 @@ sh_ptr<ITester> CreateTester(const string& testerName) {
     return tester;
 }
 
-int main(int argc, char** argv) {
+int main(int argc, const char* argv[]) {
     try {
         cout << "Welcome to the Machine Learning Library!" << endl << endl;
+
+        if (argc == 1 || GetProgramArg(argc, argv, g_args[ARG_HELP])) {
+            ProgramArg* it = g_args;
+            while ((++it)->short_) {
+                cout << it->short_ << " " << it ->long_ << endl;
+                cout << "\t" << it->description_ << endl;
+            }
+            cout << endl;
+        }
 
         ListClassifiers();
         RegisterCVTesters();
@@ -95,9 +165,10 @@ int main(int argc, char** argv) {
         double error = tester->Test(*classifier, dataSet.get());
         cout << "Errors: " << error << endl;
 
-        return EXIT_SUCCESS;
     } catch (const std::exception& ex) {
         std::cerr << "Exception occurred: " << ex.what() << endl;
         return EXIT_FAILURE;
     }
+
+    return EXIT_SUCCESS;
 }
