@@ -93,16 +93,19 @@ CONFIGURE_FILE(${MachineLearningLibrary_SOURCE_DIR}/doc/doxyfile.cmake
 )    
 
 # Searching for doxygen location and initializes ${DOXYGEN} when found
-FIND_PACKAGE(DOXYGEN)
+FIND_PACKAGE(Doxygen)
 
-#INSTALL(DIRECTORY ${MachineLearningLibrary_BINARY_DIR} DESTINATION ${CMAKE_INSTALL_PREFIX})
+IF(DOXYGEN_FOUND)
 
-# This creates a new target to build documentation.
-# It runs ${DOXYGEN} which is the full path and executable to
-# Doxygen on your system, set by the FindDoxygen.cmake module
-# (called by FindDocumentation.cmake).
-# It runs the final generated Doxyfile against it.
-# The DOT_PATH is substituted into the Doxyfile.
-ADD_CUSTOM_TARGET(doc ${DOXYGEN}
-	${MachineLearningLibrary_BINARY_DIR}/doxyfile.cmake
-)
+	#INSTALL(DIRECTORY ${MachineLearningLibrary_BINARY_DIR} DESTINATION ${CMAKE_INSTALL_PREFIX})
+
+	# This creates a new target to build documentation.
+	# It runs ${DOXYGEN} which is the full path and executable to
+	# Doxygen on your system, set by the FindDoxygen.cmake module
+	# (called by FindDocumentation.cmake).
+	# It runs the final generated Doxyfile against it.
+	# The DOT_PATH is substituted into the Doxyfile.
+	ADD_CUSTOM_TARGET(doc ${DOXYGEN}
+		${MachineLearningLibrary_BINARY_DIR}/doxyfile.cmake)
+ENDIF()
+
