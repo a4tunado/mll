@@ -9,13 +9,9 @@
 using std::string;
 using std::vector;
 
+namespace mll {
+
 namespace {
-
-const double NaN = std::numeric_limits<double>::quiet_NaN();
-
-bool IsNaN(double value) {
-    return value != value;
-}
 
 class Tokenizer {
 public:
@@ -112,61 +108,13 @@ private:
     string currentToken_;
 };
 
+} // namespace
+
+const double NaN = std::numeric_limits<double>::quiet_NaN();
+
+bool IsNaN(double value) {
+    return value != value;
 }
-
-//
-//void DataSet::Load(const std::string& file) {	
-//	std::ifstream input(file.c_str());
-//	if (input.is_open()) {
-//		std::string line;		
-//		Tokenizer tokenizer;
-//		Clear();
-//		{	// counting features
-//			int width = 0;
-//			double value = 0.;
-//			std::string target;
-//			getline(input, line);
-//			tokenizer.Init(line.c_str());
-//			tokenizer.NextValue(&value);
-//			tokenizer.NextValue(&target);
-//			while (tokenizer.NextValue(&value))
-//			{ ++width; } assert(width > 0);
-//			Reserve(1024, width);
-//		}
-//		{	// loading data
-//			int object = 0;
-//			double value = 0.;			
-//			std::string target;
-//			std::map<std::string, int> targets;
-//			do {
-//				object = NewObject();
-//				tokenizer.Init(line.c_str());
-//				tokenizer.NextValue(&value);
-//				SetWeight(object, value);
-//				tokenizer.NextValue(&target);
-//				{	// target string mapping
-//					std::map<std::string, int>::iterator it = targets.find(target);
-//					if (it != targets.end())
-//					{ SetTarget(object, Value(it->second)); }
-//					else {
-//						int index = AddTarget(target);
-//						targets.insert(std::make_pair(target, index));
-//						SetTarget(object, Value(index));
-//					}
-//				}
-//				for (int i = 0; i < FeatureCount(); i++) {
-//					assert(!tokenizer.End());
-//					tokenizer.NextValue(&value);					
-//					SetFeature(object, i, value);					
-//				}
-//			} while (getline(input, line));
-//		}
-//	}
-//}
-//
-//} // end of namespace mll
-
-namespace mll {
 
 DataSet::DataSet(const IDataSet& dataSet)
     : metaData_(dataSet.GetMetaData()),
