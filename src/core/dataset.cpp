@@ -110,12 +110,6 @@ private:
 
 } // namespace
 
-const double NaN = std::numeric_limits<double>::quiet_NaN();
-
-bool IsNaN(double value) {
-    return value != value;
-}
-
 DataSet::DataSet(const IDataSet& dataSet)
     : metaData_(dataSet.GetMetaData()),
       objectCount_(dataSet.GetObjectCount()),
@@ -321,6 +315,38 @@ int DataSet::AddObject() {
     targets_.push_back(0);
     weights_.push_back(1);
     return objectCount_++;
+}
+
+double DataSet::GetConfidence(int objectIndex, int target) const {
+    if (static_cast<int>(confidences_.size()) > objectIndex &&
+        confidences_.at(objectIndex).size() > 0)
+    {
+        return confidences_.at(objectIndex).at(target);
+    } else {
+        if (target == Refuse) {
+            return 0;
+        }
+        int actualTarget = GetTarget(objectIndex);
+        if (target == actualTarget) {
+            return 1.0;
+        } else if (actualTarget == Refuse) {
+            return 1.0 / GetClassCount();
+        } else {
+            return 0;
+        }
+    }
+}
+
+void DataSet::SetConfidence(int objectIndex, int target, double confidence) {
+    if (confidence >= 0) {
+        if (static_cast<int>(confidences_.size()) <= objectIndex) {
+            confidences_.resize(GetObjectCount());
+        }
+        if (confidences_.at(objectIndex).size() == 0) {
+            confidences_.at(objectIndex).resize(GetClassCount());
+        }
+        confidences_.at(objectIndex).at(target) = confidence;
+    }
 }
 
 } // namespace mll

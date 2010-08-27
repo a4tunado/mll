@@ -30,6 +30,19 @@ void DataSetWrapper::SetFeatureIndexes(sh_ptr< vector<int> > featureIndexes) {
     featureIndexes_ = featureIndexes;
 }
 
+
+void DataSetWrapper::CreateFeatures() {
+    if (features_.get() == NULL) {
+        features_.reset(new vector< vector<double> >(dataSet_->GetObjectCount()));
+        for (int i = 0; i < static_cast<int>(features_->size()); ++i) {
+            features_->at(i).resize(dataSet_->GetFeatureCount());
+            for (int j = 0; j < static_cast<int>(features_->at(i).size()); ++j) {
+                features_->at(i).at(j) = dataSet_->GetFeature(i, j);
+            }
+        }
+    }
+}
+
 void DataSetWrapper::CreateTargets() {
     if (targets_.get() == NULL) {
         targets_.reset(new vector<int>(dataSet_->GetObjectCount()));
@@ -42,8 +55,20 @@ void DataSetWrapper::CreateTargets() {
 void DataSetWrapper::CreateWeights() {
     if (weights_.get() == NULL) {
         weights_.reset(new vector<double>(dataSet_->GetObjectCount()));
-        for (int i = 0; i < static_cast<int>(targets_->size()); ++i) {
+        for (int i = 0; i < static_cast<int>(weights_->size()); ++i) {
             weights_->at(i) = dataSet_->GetWeight(i);
+        }
+    }
+}
+
+void DataSetWrapper::CreateConfidences() {
+    if (confidences_.get() == NULL) {
+        confidences_.reset(new vector< vector<double> >(dataSet_->GetObjectCount()));
+        for (int i = 0; i < static_cast<int>(features_->size()); ++i) {
+            confidences_->at(i).resize(dataSet_->GetClassCount());
+            for (int j = 0; j < static_cast<int>(features_->at(i).size()); ++j) {
+                confidences_->at(i).at(j) = dataSet_->GetConfidence(i, j);
+            }
         }
     }
 }

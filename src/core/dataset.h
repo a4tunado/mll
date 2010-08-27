@@ -72,6 +72,17 @@ public:
         }
     }
 
+    //! Returns true if the dataset has matrix of confidences
+    virtual bool HasConfidences() const {
+        return confidences_.size() > 0;
+    }
+
+    //! Gets the object classification confidence for the target
+    virtual double GetConfidence(int objectIndex, int target) const;
+
+    //! Sets the object classification confidence for the target
+    virtual void SetConfidence(int objectIndex, int target, double confidence);
+
     //! Swaps two objects
     virtual void SwapObjects(int objectIndex1, int objectIndex2) {
         std::swap(features_.at(objectIndex1), features_.at(objectIndex2));
@@ -97,11 +108,12 @@ private:
     //! Loads data from SVM-Light file
     bool LoadSvmLight(std::istream& input);
 
-	MetaData metaData_;				                //!< Metadata
-    int objectCount_;                               //!< Number of objects
-    std::vector< std::vector<double> > features_;   //!< Features matrix values
-    std::vector<int> targets_;                      //!< Targets vector
-    std::vector<double> weights_;                   //!< Weights vector
+	MetaData metaData_;				                    //!< Metadata
+    int objectCount_;                                   //!< Number of objects
+    std::vector< std::vector<double> > features_;       //!< Features matrix
+    std::vector<int> targets_;                          //!< Targets vector
+    std::vector<double> weights_;                       //!< Weights vector
+    std::vector< std::vector<double> > confidences_;    //!< Confidences matrix
 };
 
 } // namespace mll

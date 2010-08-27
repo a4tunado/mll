@@ -2,6 +2,7 @@
 #define DATA_H_
 
 #include <algorithm>
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -12,6 +13,16 @@ namespace mll {
 
 //! Classification refusal
 const int Refuse = -1;
+
+//! Missed value
+const double NaN = std::numeric_limits<double>::quiet_NaN();
+
+//! Checks if the value is missed
+inline bool IsNaN(double value) {
+    return value != value;
+}
+
+
 
 //! Feature value type
 enum FeatureType {
@@ -78,7 +89,11 @@ public:
     virtual int GetTarget(int objectIndex) const = 0;
     //! Gets the object's weight
     virtual double GetWeight(int objectIndex) const = 0;
-
+    //! Returns true if the dataset has matrix of confidences
+    virtual bool HasConfidences() const = 0;
+    //! Gets the object classification confidence for the target
+    virtual double GetConfidence(int objectIndex, int target) const = 0;
+    
     //! Gets data name
     const std::string& GetName() const;
     //! Number of features in data
@@ -88,11 +103,15 @@ public:
     //! Calculates the sum of weights of all objects
     double GetWeightSum() const;
 
+    //! Sets the object's value of the feature
+    virtual void SetFeature(int objectIndex, int featureIndex, double feature) = 0;
     //! Sets the object's value of the target feature
     virtual void SetTarget(int objectIndex, int target) = 0;
     //! Sets the object's weight
     virtual void SetWeight(int objectIndex, double weight) = 0;
-    //virtual void SetFeature(int objectIndex, int featureIndex, double feature) = 0; - maybe later
+    //! Sets the object classification confidence for the target
+    virtual void SetConfidence(int objectIndex, int target, double confidence) = 0;
+    
 
     //! Normalizes weights of all objects so that their sum equals to 1.0
     virtual void NormalizeWeights();
