@@ -7,6 +7,22 @@ SET(_MLL_CORE_SOURCES
     metadata_wrapper.cpp
     tester.cpp
     cross_validation.cpp
+    classifier.h
+    configurable-inl.h
+    configurable.h
+    cross_validation.h
+    data-inl.h
+    data.h
+    dataset.h
+    dataset_wrapper.h
+    factories-inl.h
+    factories.h
+    fix_alloc.h
+    metadata.h
+    metadata_wrapper.h
+    sh_ptr.h
+    tester.h
+    util.h
 )
 
 FOREACH(_FILENAME ${_MLL_CORE_SOURCES})
