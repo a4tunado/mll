@@ -7,6 +7,7 @@
 #include "dataset.h"
 #include "factories.h"
 #include "tester.h"
+#include "logger.h"
 
 using std::cout;
 using std::endl;
@@ -24,16 +25,18 @@ struct ProgramArg {
 
 ProgramArg g_args[] = {
     { "-?", "--help", "Display this message", NULL }
-    , { "-c", "--classifier"          , "Classifier name"                       , NULL }
-    , { "-d", "--dataFile"            , "Received data file path"               , NULL }
-    , { "-l", "--learningIndexes"     , "Leraning indexes file path"            , NULL }
-    , { "-t", "--testIndexes"         , "Test indexes file path"                , NULL }
-    , { "-p", "--penalies"            , "Penalty matrix file path"              , NULL }
-    , { "-r", "--algProperties"       , "Classifier properties output file path", NULL }
-    , { "-T", "--targetOutput"        , "Target output file path"               , NULL }
-    , { "-C", "--confidenceOutput"    , "Confidence output file path"           , NULL }
-    , { "-F", "--featureWeightsOutput", "Feature weights output file path"      , NULL }
-    , { "-W", "--objectWeightsOutput" , "Object weights output file path"       , NULL }
+    , { "-c", "--classifier"          , "Classifier name"									, NULL  }
+    , { "-d", "--dataFile"            , "Received data file path"							, NULL  }
+    , { "-l", "--learningIndexes"     , "Leraning indexes file path"						, NULL  }
+    , { "-t", "--testIndexes"         , "Test indexes file path"							, NULL  }
+    , { "-p", "--penalies"            , "Penalty matrix file path"							, NULL  }
+    , { "-r", "--algProperties"       , "Classifier properties output file path"			, NULL  }
+    , { "-T", "--targetOutput"        , "Target output file path"							, NULL  }
+    , { "-C", "--confidenceOutput"    , "Confidence output file path"						, NULL  }
+    , { "-F", "--featureWeightsOutput", "Feature weights output file path"					, NULL  }
+    , { "-W", "--objectWeightsOutput" , "Object weights output file path"					, NULL  }
+    , { "-L", "--logFile"             , "Log file path"										, NULL  }
+	, { "-V", "--logLevel"            , "Log level mask: ERR=0x1 WRN=0x2 INF=0x4 DBG=0x8"	, "0xf" }
     , { NULL }
 };
 
@@ -49,6 +52,8 @@ enum {
     , ARG_CONFIDENCEOUTPUT
     , ARG_FEATUREWEIGHTSOUTPUT
     , ARG_OBJECTWEIGHTSOUTPUT
+	, ARG_LOGFILE
+	, ARG_LOGLEVEL
 };
 
 const char** GetProgramArg(int argc, const char* argv[], const ProgramArg& arg) {
@@ -142,17 +147,49 @@ sh_ptr<ITester> CreateTester(const string& testerName) {
 }
 
 int main(int argc, const char* argv[]) {
+
+	LOGHANDLER(stderr);
+
     try {
         cout << "Welcome to the Machine Learning Library!" << endl << endl;
-
-        if (argc == 1 || GetProgramArg(argc, argv, g_args[ARG_HELP])) {
+        
+		if (argc < 2 || GetProgramArg(argc, argv, g_args[ARG_HELP])) {
+			// outputting usage list
             ProgramArg* it = g_args;
             while ((++it)->short_) {
-                cout << it->short_ << " " << it ->long_ << endl;
+                cout << it->short_ << " " << it->long_ << endl;
                 cout << "\t" << it->description_ << endl;
             }
             cout << endl;
         }
+
+		if (GetProgramArg(argc, argv, g_args[ARG_LOGFILE])) {
+			// log file
+			FILE* logFile = fopen(
+				GetProgramArgValue(
+					argc, argv, g_args[ARG_LOGFILE]), "w");
+			LOGHANDLER(logFile);
+		}
+
+		{	// logging out command args
+			ProgramArg* it = g_args;
+            while ((++it)->short_) {
+				if (GetProgramArg(argc, argv, *it)) {
+					const char* value = 
+						GetProgramArgValue(argc, argv, *it);
+					if (value) LOGI("%-16s: %s", it->long_, value);					
+					else LOGI("%s", it->long_);
+				}
+			}
+		}
+
+		if (GetProgramArg(argc, argv, g_args[ARG_LOGLEVEL])) {
+			// log level
+			int logLevel = atoi(
+				GetProgramArgValue(
+					argc, argv, g_args[ARG_LOGLEVEL]));
+					LOGLEVEL(logLevel);
+		}
 
         ListClassifiers();
         RegisterCVTesters();
