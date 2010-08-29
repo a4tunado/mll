@@ -25,18 +25,23 @@ struct ProgramArg {
 
 ProgramArg g_args[] = {
     { "-?", "--help", "Display this message", NULL }
-    , { "-c", "--classifier"          , "Classifier name"									, NULL  }
-    , { "-d", "--dataFile"            , "Received data file path"							, NULL  }
-    , { "-l", "--learningIndexes"     , "Leraning indexes file path"						, NULL  }
-    , { "-t", "--testIndexes"         , "Test indexes file path"							, NULL  }
-    , { "-p", "--penalies"            , "Penalty matrix file path"							, NULL  }
-    , { "-r", "--algProperties"       , "Classifier properties output file path"			, NULL  }
-    , { "-T", "--targetOutput"        , "Target output file path"							, NULL  }
-    , { "-C", "--confidenceOutput"    , "Confidence output file path"						, NULL  }
-    , { "-F", "--featureWeightsOutput", "Feature weights output file path"					, NULL  }
-    , { "-W", "--objectWeightsOutput" , "Object weights output file path"					, NULL  }
-    , { "-L", "--logFile"             , "Log file path"										, NULL  }
-	, { "-V", "--logLevel"            , "Log level mask: ERR=0x1 WRN=0x2 INF=0x4 DBG=0x8"	, "0xf" }
+	, { "-!", "--classify"				, "Classification mode"								, NULL  }
+	, { "-#", "--test"					, "Test mode"										, NULL  }
+    , { "-c", "--classifier"			, "Classifier name"									, NULL  }
+    , { "-d", "--dataFile"				, "Received data file path"							, NULL  }
+    , { "-l", "--learningIndexes"		, "Leraning indexes file path"						, NULL  }
+    , { "-t", "--testIndexes"			, "Test indexes file path"							, NULL  }
+    , { "-p", "--penalies"				, "Penalty matrix file path"						, NULL  }
+    , { "-r", "--algProperties"			, "Classifier properties output file path"			, NULL  }
+    , { "-A", "--learnTargetOutput"		, "Learn targets output file path"					, NULL  }
+	, { "-S", "--testTargetOutput"      , "Test targets output file path"                   , NULL  }
+	, { "-N", "--learnProbOutput"       , "Learn probabilyties output file path"            , NULL  }
+    , { "-R", "--testProbOutput"        , "Test probabilyties output file path"             , NULL  }
+    , { "-C", "--confidenceOutput"		, "Confidence output file path"						, NULL  }
+    , { "-F", "--featureWeightsOutput"	, "Feature weights output file path"				, NULL  }
+    , { "-W", "--objectWeightsOutput"	, "Object weights output file path"					, NULL  }
+    , { "-L", "--logFile"				, "Log file path"									, NULL  }
+	, { "-V", "--logLevel"				, "Log level mask: ERR=0x1 WRN=0x2 INF=0x4 DBG=0x8"	, "0xf" }
     , { NULL }
 };
 
@@ -48,7 +53,10 @@ enum {
     , ARG_TESTINDEXES
     , ARG_PENALTIES
     , ARG_ALGPROPERTIES
-    , ARG_TARGETOUTPUT
+    , ARG_LEARNTARGETOUTPUT
+	, ARG_TESTTARGETOUTPUT
+	, ARG_LEARNPROBOUTPUT
+	, ARG_TESTPROBOUTPUT
     , ARG_CONFIDENCEOUTPUT
     , ARG_FEATUREWEIGHTSOUTPUT
     , ARG_OBJECTWEIGHTSOUTPUT
