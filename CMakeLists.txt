@@ -7,7 +7,6 @@ INCLUDE_DIRECTORIES(${MLL_SOURCE_DIR}/lib)
 
 # 1. Load external libraries
 ADD_SUBDIRECTORY(lib/gtest)
-ADD_SUBDIRECTORY(lib/sqlite)
 
 # 2. Load own source
 ADD_SUBDIRECTORY(src)

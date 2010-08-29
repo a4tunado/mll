@@ -1,33 +1,11 @@
-SET(_MLL_CORE_SOURCES
-    fix_alloc.cpp
-    util.cpp
-    dataset.cpp
-    dataset_wrapper.cpp
-    metadata.cpp
-    metadata_wrapper.cpp
-    tester.cpp
-    cross_validation.cpp
-    classifier.h
-    configurable-inl.h
-    configurable.h
-    cross_validation.h
-    data-inl.h
-    data.h
-    dataset.h
-    dataset_wrapper.h
-    factories-inl.h
-    factories.h
-    fix_alloc.h
-    metadata.h
-    metadata_wrapper.h
-    sh_ptr.h
-    tester.h
-    util.h
-)
+FILE(GLOB _MLL_CORE_HEADERS "*.h")
+FILE(GLOB _MLL_CORE_SOURCES "*.cpp")
 
-FOREACH(_FILENAME ${_MLL_CORE_SOURCES})
-    GET_FILENAME_COMPONENT(_FILENAME ${_FILENAME} ABSOLUTE)
-    SET(_MLL_CORE_SOURCES_P ${_MLL_CORE_SOURCES_P} ${_FILENAME})
+FOREACH(_FILENAME ${_MLL_CORE_SOURCES} ${_MLL_CORE_HEADERS})
+	# filtering unit test sources
+	IF(NOT ${_FILENAME} MATCHES ".*\\_ut\\.cpp")
+		SET(_MLL_CORE_SOURCES_P ${_MLL_CORE_SOURCES_P} ${_FILENAME})
+	ENDIF()
 ENDFOREACH()
 
 SET(MLL_CORE_SOURCES ${_MLL_CORE_SOURCES_P} PARENT_SCOPE)
