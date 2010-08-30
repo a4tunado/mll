@@ -10,7 +10,7 @@ FOREACH(_UNITTEST ${MLL_UNITTESTS})
 ENDFOREACH()
 
 ADD_EXECUTABLE(mll
-    main_mll.cpp
+    main.cpp
     ${MLL_CORE_SOURCES}
     ${MLL_USER_SOURCES}
 )
