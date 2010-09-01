@@ -88,7 +88,7 @@ sh_ptr<ITester> CreateTester(const string& testerName) {
 vector<int> readIndexes(const string& filename) {
 	ifstream fin(filename.c_str());
 	if (!fin.is_open()) {
-		throw std::exception("File doesn't exists!");
+		throw std::invalid_argument("File doesn't exists!");
 	}
 	vector<int> res;
 	int index;
