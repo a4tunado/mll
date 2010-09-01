@@ -4,14 +4,13 @@
 #include <cstdio>
 #include <set>
 
-#define LOGE(fmt, ...) mll::Logger::Inst().Write(mll::Logger::LOG_ERR, fmt, __VA_ARGS__)
-#define LOGW(fmt, ...) mll::Logger::Inst().Write(mll::Logger::LOG_WRN, fmt, __VA_ARGS__)
-#define LOGI(fmt, ...) mll::Logger::Inst().Write(mll::Logger::LOG_INF, fmt, __VA_ARGS__)
-#define LOGD(fmt, ...) mll::Logger::Inst().Write(mll::Logger::LOG_DBG, fmt, __VA_ARGS__)
+#define LOGE(fmt, ...) Logger::Inst().Write(mll::Logger::LOG_ERR, fmt, __VA_ARGS__)
+#define LOGW(fmt, ...) Logger::Inst().Write(mll::Logger::LOG_WRN, fmt, __VA_ARGS__)
+#define LOGI(fmt, ...) Logger::Inst().Write(mll::Logger::LOG_INF, fmt, __VA_ARGS__)
+#define LOGD(fmt, ...) Logger::Inst().Write(mll::Logger::LOG_DBG, fmt, __VA_ARGS__)
 
-#define LOGLEVEL(level)  mll::Logger::Inst().SetLevel(level)
-#define LOGHANDLER(file) mll::Logger::Inst().AddHandler(file)
-
+#define LOGLEVEL(level) Logger::Inst().SetLevel(level)
+#define LOGHANDLER(file) Logger::Inst().AddHandler(file)
 
 namespace mll {
 
@@ -22,7 +21,7 @@ public:
 	virtual ~Logger();
 	void SetLevel(int level);
     int GetLevel() const;
-    void AddHandler(FILE* file);
+    FILE* AddHandler(FILE* file);
 	void Write(int level, const char* format, ...);
 private:
         Logger();
@@ -30,7 +29,6 @@ private:
         char buf_[1024];
         std::set<FILE*> handlers_;
 };
-
 
 }
 

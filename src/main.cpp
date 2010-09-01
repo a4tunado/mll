@@ -10,10 +10,12 @@
 #include "dataset.h"
 #include "factories.h"
 #include "tester.h"
+#include "logger.h"
 
 using std::cout;
 using std::cerr;
 using std::endl;
+using std::list;
 using std::vector;
 using std::string;
 using std::ifstream;
@@ -120,6 +122,7 @@ void OutputWeights(const string& filename, const IDataSet&) {
 void LoadPenalties(IDataSet* dataSet, const string& filename) {
 }
 
+const FILE* logger = LOGHANDLER(stderr);
 
 int main(int argc, char** argv) {
     try {
