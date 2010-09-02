@@ -20,6 +20,7 @@ public:
         if (dataSet == NULL) {
             throw std::logic_error("DataSet cannot be null");
         }
+		features_.resize(dataSet_->GetFeatureCount());
     }
 
     //! Restores all properties to their original values
@@ -29,6 +30,7 @@ public:
         ResetObjectIndexes();
         ResetWeights();
         ResetTargets();
+		ResetFeatures();
     }
 
     void ResetMetaData() {
@@ -57,6 +59,12 @@ public:
         targets_.reset();
     }
 
+	void ResetFeatures() {
+		for (int i = 0; i < static_cast<int>(features_.size()); ++i) {
+			features_[i] = sh_ptr< std::vector<double> >();
+		}
+	}
+
     //! Gets metadata about the dataset
     virtual const IMetaData& GetMetaData() const {
         if (metaData_.get() != NULL) {
@@ -75,30 +83,17 @@ public:
         }
     }
 
-    //! Returns false if the feature value for the object is missed
-    virtual bool HasFeature(int objectIndex, int featureIndex) const {
-        if (features_.get() != NULL) {
-            return IsNaN(features_->at(
-                GetActualObjectIndex(objectIndex)).at(
-                GetActualFeatureIndex(featureIndex)));
-        } else {
-            return dataSet_->HasFeature(
-                GetActualObjectIndex(objectIndex),
-                GetActualFeatureIndex(featureIndex));
-        }
-    }
-
     //! Gets the object's value of the feature
     virtual double GetFeature(int objectIndex, int featureIndex) const {
-        if (features_.get() != NULL) {
-            return features_->at(
-                GetActualObjectIndex(objectIndex)).at(
-                GetActualFeatureIndex(featureIndex));
-        } else {
-            return dataSet_->GetFeature(
-                GetActualObjectIndex(objectIndex),
-                GetActualFeatureIndex(featureIndex));
-        }
+		int actualFeatureIndex = GetActualFeatureIndex(featureIndex);
+		if (features_[actualFeatureIndex].get() != NULL) {
+			return features_[actualFeatureIndex]->at(
+					GetActualObjectIndex(objectIndex));
+		} else {
+			return dataSet_->GetFeature(
+					GetActualObjectIndex(objectIndex),
+					actualFeatureIndex);
+		}
     }
 
     //! Gets the object's value of the target feature
@@ -119,31 +114,9 @@ public:
         }
     }
 
-    //! Returns true if the dataset has matrix of confidences
-    virtual bool HasConfidences() const {
-        return confidences_.get() != NULL || dataSet_->HasConfidences();
-    }
-
-    //! Gets the object classification confidence for the target
-    virtual double GetConfidence(int objectIndex, int target) const {
-        if (confidences_.get() != NULL) {
-            return confidences_->at(GetActualObjectIndex(objectIndex)).at(target);
-        } else {
-            return dataSet_->GetConfidence(GetActualObjectIndex(objectIndex), target);
-        }
-    }
-
     //! Sets metadata
     void SetMetaData(const IMetaData* metaData);
 
-    //! Sets the object's value of the feature
-    virtual void SetFeature(int objectIndex, int featureIndex, double feature) {
-        CreateFeatures();
-        features_->at(
-            GetActualObjectIndex(objectIndex)).at(
-            GetActualFeatureIndex(featureIndex)) = feature;
-    }
-    
     //! Sets the object's value of the target feature
     virtual void SetTarget(int objectIndex, int target) {
         if (target >= 0 && target < GetClassCount() || target == Refuse) {
@@ -160,13 +133,12 @@ public:
         }
     }
 
-    //! Sets the object classification confidence for the target
-    virtual void SetConfidence(int objectIndex, int target, double confidence) {
-        if (confidence >= 0) {
-            CreateConfidences();
-            confidences_->at(GetActualObjectIndex(objectIndex)).at(target) = confidence;
-        }
-    }
+	//! Sets the object's feature
+	virtual void SetFeature(int objectIndex, int featureIndex, double feature) {
+		int actualFeatureIndex = GetActualFeatureIndex(featureIndex);
+		CreateFeatures(actualFeatureIndex);
+		features_[actualFeatureIndex]->at(GetActualObjectIndex(objectIndex)) = feature;
+	}
 
     //! Swaps two objects
     virtual void SwapObjects(int objectIndex1, int objectIndex2) {
@@ -210,14 +182,12 @@ private:
     //! Sets subset (list) of feature indices
     void SetFeatureIndexes(sh_ptr< std::vector<int> > featureIndexes);
 
-    //! Creates matrix of custom features
-    void CreateFeatures();
     //! Creates vector of custom targets
     void CreateTargets();
     //! Creates vector of custom weights
     void CreateWeights();
-    //! Creates matrix of custom confidences
-    void CreateConfidences();
+	//! Creates vector of custom features
+    void CreateFeatures(int featureIndex);
     //! Creates vector of default object indices
     void CreateObjectIndexes();
     //! Creates metadata wrapper
@@ -236,10 +206,8 @@ private:
     std::auto_ptr< std::vector<double> > weights_;
     //! Custom object targets
     std::auto_ptr< std::vector<int> > targets_;
-    //! Custom feature values
-    std::auto_ptr< std::vector< std::vector<double> > > features_;
-    //! Custom confidence matrix
-    std::auto_ptr< std::vector< std::vector<double> > > confidences_;
+	//! Custom object features
+	std::vector< sh_ptr< std::vector<double> > > features_;
 };
 
 } // namespace mll
