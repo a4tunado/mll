@@ -19,7 +19,6 @@ ADD_EXECUTABLE(mll-test
     main_test.cpp
     ${MLL_CORE_SOURCES}
     ${MLL_USER_SOURCES}
-
     ${MLL_UNITTESTS}
 )
 
