@@ -110,6 +110,51 @@ void WriteVector(const std::string& fileName, const typename std::vector<T> &dat
 	LOGD("%d entries written to '%s'", data.size(), LOGSTR(fileName));
 }
 
+template<typename T>
+void WriteMatrix(const std::string& fileName, const typename std::vector<T> &data, int columns) {
+    std::ofstream output(fileName.c_str());
+    if (!output.is_open()) {
+        LOGF("Can't open output file: '%s'", LOGSTR(fileName));
+    }	
+    for (typename std::vector<T>::const_iterator it = data.begin()
+        ; it != data.end(); ++it) {
+		output << *it;
+		if ((it + 1 - data.begin()) % columns) output << " ";
+		else output << std::endl;
+    }
+    LOGD("%d x %d matrix written to '%s'", (data.size() / columns), columns, LOGSTR(fileName));
+}
+
+void Classify(const IClassifier& classifier
+				, /*const*/ IDataSet* dataSet
+				, std::vector<int>* targets
+				, std::vector<float>* confidence = NULL) {
+	targets->clear();
+	targets->resize(dataSet->GetObjectCount(), Refuse);
+	if (confidence) {
+		// NOTE: Assume that targets is numeric sequence starting from 0
+		classifier.Classify(dataSet, confidence);
+		std::vector<int>::iterator target = targets->begin();
+        for (std::vector<float>::iterator it = confidence->begin()
+			; it != confidence->end(); it += dataSet->GetClassCount(), ++target) {
+            std::vector<float>::iterator current =
+				std::max_element(it, it + dataSet->GetClassCount());
+            if (*current > 0.f) *target = current - it;                    
+        }
+	}
+    else {
+		DataSetWrapper wrapper(dataSet);
+		for (int i = 0; i < wrapper.GetObjectCount(); ++i) {
+			wrapper.SetTarget(i, Refuse);
+        }
+        classifier.Classify(&wrapper);
+        wrapper.ResetObjectIndexes();
+        for (int i = 0; i < wrapper.GetObjectCount(); ++i) {
+			(*targets)[i] = wrapper.GetTarget(i);
+        }
+    }
+}
+
 const FILE* logger = LOGHDR(stderr);
 
 int main(int argc, char** argv) {
@@ -147,9 +192,9 @@ int main(int argc, char** argv) {
 		StringArg testTargetOutputArg(
 			"", "testTargetOutput", "File to write target of test set", 
 			false, "", "string", cmd);
-		//StringArg testConfidencesOutputArg(
-		//	"", "testConfidencesOutput", "File to write confidences of test set", 
-		//	false, "", "string", cmd);
+		StringArg testConfidencesOutputArg(
+			"", "testConfidencesOutput", "File to write confidences of test set", 
+			false, "", "string", cmd);
 		//StringArg testObjectsWeightsOutputArg(
 		//	"", "testFeatureWeightsOutput", "File to write objects weights of test set", 
 		//	false, "", "string", cmd);
@@ -157,9 +202,9 @@ int main(int argc, char** argv) {
 		StringArg trainTargetOutputArg(
 			"", "trainTargetOutput", "File to write target of test set", 
 			false, "", "string", cmd);
-		//StringArg trainConfidencesOutputArg(
-		//	"", "trainConfidencesOutput", "File to write confidences of test set", 
-		//	false, "", "string", cmd);
+		StringArg trainConfidencesOutputArg(
+			"", "trainConfidencesOutput", "File to write confidences of test set", 
+			false, "", "string", cmd);
 		//StringArg trainObjectsWeightsOutputArg(
 		//	"", "trainFeatureWeightsOutput", "File to write objects weights of test set", 
 		//	false, "", "string", cmd);
@@ -215,36 +260,27 @@ int main(int argc, char** argv) {
 
 			{
 				std::vector<int> targets;
+				std::vector<float> confidence;
 				targets.reserve(dataSet->GetObjectCount());
-				{
-					LOGI("Classifing train data set...");
-					DataSetWrapper trainSetWrapper(&trainSet);
-					for (int i = 0; i < trainSetWrapper.GetObjectCount(); ++i) {
-						trainSetWrapper.SetTarget(i, Refuse);
-					}
-					classifier->Classify(&trainSetWrapper);				
-					trainSetWrapper.ResetObjectIndexes();
-					targets.resize(trainSetWrapper.GetObjectCount());
-					for (int i = 0; i < trainSetWrapper.GetObjectCount(); ++i) {
-						targets[i] = trainSetWrapper.GetTarget(i);
-					}
-					WriteVector(trainTargetOutputArg.getValue(), targets);
+
+				LOGI("Classifing train data set...");
+				Classify(*classifier, &trainSet, &targets, &confidence);
+				if (trainConfidencesOutputArg.isSet()) {
+					WriteMatrix(trainConfidencesOutputArg.getValue()
+								, confidence
+								, trainSet.GetClassCount());
 				}
-				{
-					LOGI("Classifing test data set...");
-					DataSetWrapper testSetWrapper(&testSet);
-                    for (int i = 0; i < testSetWrapper.GetObjectCount(); ++i) {
-                        testSetWrapper.SetTarget(i, Refuse);
-                    }
-                    classifier->Classify(&testSetWrapper);             
-                    testSetWrapper.ResetObjectIndexes();
-                    targets.resize(testSetWrapper.GetObjectCount());
-                    for (int i = 0; i < testSetWrapper.GetObjectCount(); ++i) {
-                        targets[i] = testSetWrapper.GetTarget(i);
-                    }
-                    WriteVector(testTargetOutputArg.getValue(), targets);
-				}
-			}
+				WriteVector(trainTargetOutputArg.getValue(), targets);
+
+				LOGI("Classifing test data set...");
+				Classify(*classifier, &testSet, &targets, &confidence);
+                if (testConfidencesOutputArg.isSet()) {
+                    WriteMatrix(testConfidencesOutputArg.getValue()
+								, confidence
+								, trainSet.GetClassCount());
+                }
+				WriteVector(testTargetOutputArg.getValue(), targets);
+			}	
 		}
 		else {
 			ListClassifiers();

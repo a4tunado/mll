@@ -217,27 +217,27 @@ def _init_optparser():
                     help="Executable file path")
   parser.add_option("-d", "--data", dest="data", default="data.arff",
                     help="Received data file path")
-  parser.add_option("-l", "--learnIndexes", dest="learnIndexes", default="learnIndexes.txt",
+  parser.add_option("-l", "--learnIndexes", dest="learnIndexes", default="learnIndexes.dat",
                     help="Learn indexes file path")
-  parser.add_option("-t", "--testIndexes", dest="testIndexes", default="testIndexes.txt",
+  parser.add_option("-t", "--testIndexes", dest="testIndexes", default="testIndexes.dat",
                     help="Test indexes file path")
-  #parser.add_option("-p", "--penalies", dest="penalties", default="penalties.txt",
+  #parser.add_option("-p", "--penalies", dest="penalties", default="penalties.dat",
   #                  help="Penalty matrix file path")
-  parser.add_option("-r", "--algProperties", dest="algProperties", default="algProperties.txt",
+  parser.add_option("-r", "--algProperties", dest="algProperties", default="algProperties.dat",
                     help="Classifier properties output file path")
-  parser.add_option("-A", "--learnTargetOutput", dest="learnTargetOutput", default="learnTarget.txt",
+  parser.add_option("-A", "--learnTargetOutput", dest="learnTargetOutput", default="learnTarget.dat",
                     help="Learn targets output file path")
-  parser.add_option("-T", "--testTargetOutput", dest="testTargetOutput", default="testTarget.txt",
+  parser.add_option("-T", "--testTargetOutput", dest="testTargetOutput", default="testTarget.dat",
                     help="Test targets output file path")
-  parser.add_option("-N", "--learnProbOutput", dest="learnProbOutput", 
+  parser.add_option("-N", "--learnProbOutput", dest="learnProbOutput", default="learnProbOutput.dat",
                     help="Learn probabilyties output file path")
-  parser.add_option("-R", "--testProbOutput", dest="testProbOutput",
+  parser.add_option("-R", "--testProbOutput", dest="testProbOutput", default="testProbOutput.dat",
                     help="Test probabilyties output file path")
-  #parser.add_option("-C", "--confidenceOutput", dest="confidenceOutput", default="confidenceOutput.txt",
+  #parser.add_option("-C", "--confidenceOutput", dest="confidenceOutput", default="confidenceOutput.dat",
   #                  help="Confidence output file path")
-  #parser.add_option("-F", "--featureWeightsOutput", dest="featureWeightsOutput", default="featureWeightsOutput.txt",
+  #parser.add_option("-F", "--featureWeightsOutput", dest="featureWeightsOutput", default="featureWeightsOutput.dat",
   #                  help="Feature weights output file path")
-  #parser.add_option("-W", "--objectWeightsOutput", dest="objectWeightsOutput", default="objectWeightsOutput.txt",
+  #parser.add_option("-W", "--objectWeightsOutput", dest="objectWeightsOutput", default="objectWeightsOutput.dat",
   #                  help="Object weights output file path")
   #parser.add_option("-L", "--logFile", dest="logFile", default="poligon.log",
   #                  help="Log file ouput path")
@@ -289,12 +289,14 @@ if __name__ == '__main__':
     # 3. Executing algorithm
     args = [options.executable
 			, "classify"
-			, "--classifier"        , options.classifier     
-			, "--data"			    , options.data  
-			, "--trainIndexes"		, index.learn.file
-            , "--testIndexes"		, index.test.file
-			, "--trainTargetOutput"	, options.learnTargetOutput
-			, "--testTargetOutput"  , options.testTargetOutput]
+			, "--classifier"             , options.classifier     
+			, "--data"			         , options.data  
+			, "--trainIndexes"		     , index.learn.file
+            , "--testIndexes"		     , index.test.file
+			, "--trainTargetOutput"	     , options.learnTargetOutput
+			, "--testTargetOutput"       , options.testTargetOutput
+			, "--trainConfidencesOutput" , options.learnProbOutput
+			, "--testConfidencesOutput"  , options.testProbOutput]
     
     logger.info('Executing {0}...'.format(options.executable))
     logger.debug(str(args))
@@ -323,8 +325,6 @@ if __name__ == '__main__':
 
     result.Test.Targets = _load_vector(options.testTargetOutput, int)
     result.Learn.Targets = _load_vector(options.learnTargetOutput, int)
-
-    # TODO: Generate probability matrix if it is not present
 
     if options.testProbOutput:
       result.Test.ProbabilityMatrix = _load_matrix(options.testProbOutput, int)

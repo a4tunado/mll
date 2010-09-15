@@ -1,2 +1,6 @@
 
 *.pyc
+*.xml
+*.log
+*.dat
+*.arff
