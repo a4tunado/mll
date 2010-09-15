@@ -215,34 +215,34 @@ def _init_optparser():
                     help="Executable file path")
   parser.add_option("-P", "--algPassword", dest="algPassword",
                     help="Executable file path")
-  parser.add_option("-d", "--dataFile", dest="dataFile", default="data.arff",
+  parser.add_option("-d", "--data", dest="data", default="data.arff",
                     help="Received data file path")
-  parser.add_option("-l", "--learningIndexes", dest="learningIndexes", default="learningIndexes.txt",
-                    help="Leraning indexes file path")
+  parser.add_option("-l", "--learnIndexes", dest="learnIndexes", default="learnIndexes.txt",
+                    help="Learn indexes file path")
   parser.add_option("-t", "--testIndexes", dest="testIndexes", default="testIndexes.txt",
                     help="Test indexes file path")
-  parser.add_option("-p", "--penalies", dest="penalties", default="penalties.txt",
-                    help="Penalty matrix file path")
+  #parser.add_option("-p", "--penalies", dest="penalties", default="penalties.txt",
+  #                  help="Penalty matrix file path")
   parser.add_option("-r", "--algProperties", dest="algProperties", default="algProperties.txt",
                     help="Classifier properties output file path")
-  parser.add_option("-A", "--learnTargetOutput", dest="learnTargetOutput",
+  parser.add_option("-A", "--learnTargetOutput", dest="learnTargetOutput", default="learnTarget.txt",
                     help="Learn targets output file path")
-  parser.add_option("-S", "--testTargetOutput", dest="testTargetOutput", 
+  parser.add_option("-T", "--testTargetOutput", dest="testTargetOutput", default="testTarget.txt",
                     help="Test targets output file path")
   parser.add_option("-N", "--learnProbOutput", dest="learnProbOutput", 
                     help="Learn probabilyties output file path")
   parser.add_option("-R", "--testProbOutput", dest="testProbOutput",
                     help="Test probabilyties output file path")
-  parser.add_option("-C", "--confidenceOutput", dest="confidenceOutput", default="confidenceOutput.txt",
-                    help="Confidence output file path")
-  parser.add_option("-F", "--featureWeightsOutput", dest="featureWeightsOutput", default="featureWeightsOutput.txt",
-                    help="Feature weights output file path")
-  parser.add_option("-W", "--objectWeightsOutput", dest="objectWeightsOutput", default="objectWeightsOutput.txt",
-                    help="Object weights output file path")
-  parser.add_option("-L", "--logFile", dest="logFile", default="poligon.log",
-                    help="Log file ouput path")
-  parser.add_option("-V", "--logLevel", desr="logLevel", defult="0xf"
-					help="Log level mask")
+  #parser.add_option("-C", "--confidenceOutput", dest="confidenceOutput", default="confidenceOutput.txt",
+  #                  help="Confidence output file path")
+  #parser.add_option("-F", "--featureWeightsOutput", dest="featureWeightsOutput", default="featureWeightsOutput.txt",
+  #                  help="Feature weights output file path")
+  #parser.add_option("-W", "--objectWeightsOutput", dest="objectWeightsOutput", default="objectWeightsOutput.txt",
+  #                  help="Object weights output file path")
+  #parser.add_option("-L", "--logFile", dest="logFile", default="poligon.log",
+  #                  help="Log file ouput path")
+  #parser.add_option("-V", "--logLevel", dest="logLevel", default="0xf",
+  #					help="Log level mask")
   return parser
 
 if __name__ == '__main__':
@@ -277,7 +277,7 @@ if __name__ == '__main__':
 
   # 2. Loading task data and creating input files
   indexes = load_task_data(task, options.algPassword
-                            , options.dataFile
+                            , options.data
                             , options.learnIndexes
                             , options.testIndexes
                             , options.algProperties)
@@ -288,21 +288,16 @@ if __name__ == '__main__':
     result = Result()
     # 3. Executing algorithm
     args = [options.executable
-			, "--classify"
-			, "--logFile"			, options.logFile
-			, "--logLevel"			, options.logLevel
-			, "--algProperties"		, options.algProperties
-			, "--dataFile"			, options.dataFile  
-			, "--learnIndexes"		, index.learn.file
+			, "classify"
+			, "--classifier"        , options.classifier     
+			, "--data"			    , options.data  
+			, "--trainIndexes"		, index.learn.file
             , "--testIndexes"		, index.test.file
-			, "--learnTargetOutput"	, options.learnTargetOutput
-			, "--testTargetOutput"  , options.testTargetOutput
-			, "--learnProbOutput"	, options.learnProbOutput
-            , "--testProbOutput"	, options.testProbOutput]
+			, "--trainTargetOutput"	, options.learnTargetOutput
+			, "--testTargetOutput"  , options.testTargetOutput]
     
-    logger.info('Executing...')
-    for arg in args:
-      logger.debug(arg)
+    logger.info('Executing {0}...'.format(options.executable))
+    logger.debug(str(args))
 
     try:
       popen = subprocess.Popen(args)
@@ -329,8 +324,13 @@ if __name__ == '__main__':
     result.Test.Targets = _load_vector(options.testTargetOutput, int)
     result.Learn.Targets = _load_vector(options.learnTargetOutput, int)
 
-    result.Test.ProbabilityMatrix = _load_matrix(options.testProbOutput, int)  
-    result.Learn.ProbabilityMatrix = _load_matrix(options.learnTargetOutput, int)
+    # TODO: Generate probability matrix if it is not present
+
+    if options.testProbOutput:
+      result.Test.ProbabilityMatrix = _load_matrix(options.testProbOutput, int)
+      
+    if options.learnTargetOutput:
+      result.Learn.ProbabilityMatrix = _load_matrix(options.learnTargetOutput, int)
 
     results.append(result)                    # Saving targets
 

@@ -116,18 +116,20 @@ def register_results(algsynonim, password, pocketid, results):
     # ProbabilityMatrix
     test_result.ProbabilityMatrix = test_result.new_ProbabilityMatrix()
     learn_result.ProbabilityMatrix = learn_result.new_ProbabilityMatrix()
+   
+    if results[i].Test.ProbabilityMatrix:  
+      for vector in results[i].Test.ProbabilityMatrix:
+        array = test_result.ProbabilityMatrix.new_ArrayOfDouble()
+        for item in vector:
+          array.Double.append(item)
+        test_result.ProbabilityMatrix.ArrayOfDouble.append(array)
     
-    for vector in results[i].Test.ProbabilityMatrix:
-      array = test_result.ProbabilityMatrix.new_ArrayOfDouble()
-      for item in vector:
-        array.Double.append(item)
-      test_result.ProbabilityMatrix.ArrayOfDouble.append(array)
-    
-    for vector in results[i].Learn.ProbabilityMatrix:
-      array = learn_result.ProbabilityMatrix.new_ArrayOfDouble()
-      for item in vector:
-        array.Double.append(item)
-      learn_result.ProbabilityMatrix.ArrayOfDouble.append(array)      
+    if results[i].Learn.ProbabilityMatrix:
+      for vector in results[i].Learn.ProbabilityMatrix:
+        array = learn_result.ProbabilityMatrix.new_ArrayOfDouble()
+        for item in vector:
+          array.Double.append(item)
+        learn_result.ProbabilityMatrix.ArrayOfDouble.append(array)      
     
     register_request.TestResults.TestResult.append(test_result)   
     register_request.LearnResults.TestResult.append(learn_result)
