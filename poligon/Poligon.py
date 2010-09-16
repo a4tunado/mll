@@ -140,6 +140,7 @@ def _save_indexes(indexes, path):
 def _save_params(task, path):
   """Writes alg params into the given file"""
   # NOTE: parameter name and value shouldn't contain any blanks
+  # TODO: use json format
   count = 0
   file = open(path, 'w')
   try:
@@ -174,12 +175,14 @@ def _load_matrix(name, type=str):
   file.close()
   lines = text.split('\n')
   for line in lines:
-    if (len(line)):
-      items = line.split(' ')
-      vector = []
-      for item in items:
-        vector.append(type(item))
-      matrix.append(vector)
+    if not line: break
+    items = line.split(' ')
+    if not items: break
+    vector = []
+    for item in items:
+      vector.append(type(item))
+    matrix.append(vector)
+  return matrix
 
 def _init_logger():
   today = datetime.today()
@@ -212,16 +215,16 @@ def _init_optparser():
   parser.add_option("-e", "--executable", dest="executable", default="mll",
                     help="Executable file path")
   parser.add_option("-S", "--algSynonim", dest="algSynonim",
-                    help="Executable file path")
+                    help="Poligon alg synonim")
   parser.add_option("-P", "--algPassword", dest="algPassword",
-                    help="Executable file path")
+                    help="Poligon alg password")
   parser.add_option("-d", "--data", dest="data", default="data.arff",
                     help="Received data file path")
   parser.add_option("-l", "--learnIndexes", dest="learnIndexes", default="learnIndexes.dat",
                     help="Learn indexes file path")
   parser.add_option("-t", "--testIndexes", dest="testIndexes", default="testIndexes.dat",
                     help="Test indexes file path")
-  #parser.add_option("-p", "--penalies", dest="penalties", default="penalties.dat",
+  #parser.add_option("-p", "--penalties", dest="penalties", default="penalties.dat",
   #                  help="Penalty matrix file path")
   parser.add_option("-r", "--algProperties", dest="algProperties", default="algProperties.dat",
                     help="Classifier properties output file path")
@@ -269,25 +272,35 @@ if __name__ == '__main__':
   parser = _init_optparser()
   
   (options, args) = parser.parse_args()
-  logger.info(options)
+  logger.debug(options)
 
   # 1. Loading task info from poligon server
   task = poligon.get_task(options.algSynonim
 							, options.algPassword)
 
-  # 2. Loading task data and creating input files
-  indexes = load_task_data(task, options.algPassword
+  if not task:
+    logger.info(
+      "There is no task for {0} {1}".format(
+        options.algSynonim, options.algPassword))
+    exit()
+
+  while task:
+
+    logger.debug(task)
+
+    # 2. Loading task data and creating input files
+    indexes = load_task_data(task, options.algPassword
                             , options.data
                             , options.learnIndexes
                             , options.testIndexes
                             , options.algProperties)
 
-  results = []
+    results = []
 
-  for index in indexes:
-    result = Result()
-    # 3. Executing algorithm
-    args = [options.executable
+    for index in indexes:
+      result = Result()
+      # 3. Executing algorithm
+      args = [options.executable
 			, "classify"
 			, "--classifier"             , options.classifier     
 			, "--data"			         , options.data  
@@ -298,48 +311,56 @@ if __name__ == '__main__':
 			, "--trainConfidencesOutput" , options.learnProbOutput
 			, "--testConfidencesOutput"  , options.testProbOutput]
     
-    logger.info('Executing {0}...'.format(options.executable))
-    logger.debug(str(args))
+      logger.info('Executing {0}...'.format(options.executable))
+      logger.debug(str(args))
 
-    try:
-      popen = subprocess.Popen(args)
-      popen.wait()
-    except:
-      result.Error = True
-      result.ErrorException = \
-        'Error occured while executing process: {0}'.format(sys.exc_info()[0])
-      logger.error(result.ErrorException)
-      results.append(result)
-      continue
+      try:
+        popen = subprocess.Popen(args)
+        popen.wait()
+      except:
+        result.Error = True
+        result.ErrorException = \
+          'Error occured while executing process: {0}'.format(sys.exc_info()[0])
+        logger.error(result.ErrorException)
+        results.append(result)
+        continue
 
-    # 4. Handling errors
-    if popen.returncode:
-      result.Error = True
-      result.ErrorException = \
-        'Process exited with error code: {0}'.format(popen.returncode)
-      logger.error(result.ErrorException)
-      results.append(result)
-      continue
+      # 4. Handling errors
+      if popen.returncode:
+        result.Error = True
+        result.ErrorException = \
+          'Process exited with error code: {0}'.format(popen.returncode)
+        logger.error(result.ErrorException)
+        results.append(result)
+        continue
 
-    # 5. Loading results
+      # 5. Loading results
 
-    result.Test.Targets = _load_vector(options.testTargetOutput, int)
-    result.Learn.Targets = _load_vector(options.learnTargetOutput, int)
+      result.Test.Targets = _load_vector(options.testTargetOutput, int)
+      result.Learn.Targets = _load_vector(options.learnTargetOutput, int)
 
-    if options.testProbOutput:
-      result.Test.ProbabilityMatrix = _load_matrix(options.testProbOutput, int)
+      result.Test.ProbabilityMatrix = _load_matrix(options.testProbOutput, int)      
+      result.Learn.ProbabilityMatrix = _load_matrix(options.learnProbOutput, int)
+
+      logger.debug("Test results size: {0} {1}".format(
+        len(result.Test.Targets), len(result.Test.ProbabilityMatrix)))
       
-    if options.learnTargetOutput:
-      result.Learn.ProbabilityMatrix = _load_matrix(options.learnTargetOutput, int)
+      logger.debug("Learn results size: {0} {1}".format(
+        len(result.Learn.Targets), len(result.Learn.ProbabilityMatrix)))
 
-    results.append(result)                    # Saving targets
+      results.append(result)                    # Saving targets
 
-  logger.info('{0} targets produced'.format(len(results)))
+    logger.info('Registering results {0}'.format(len(results)))
 
-  # 6. Registering results
-  poligon.register_results(options.algSynonim
+    # 6. Registering results
+    poligon.register_results(options.algSynonim
 							, options.algPassword
                             , task.PocketId
 							, results)
+
+    break
+    # 7. Requesting next task
+    task = poligon.get_task(options.algSynonim
+                            , options.algPassword)
     
 
