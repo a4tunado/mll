@@ -246,6 +246,8 @@ def _init_optparser():
   #                  help="Log file ouput path")
   #parser.add_option("-V", "--logLevel", dest="logLevel", default="0xf",
   #					help="Log level mask")
+  parser.add_option("-B", "--batchMode", dest="batchMode", default="off",
+                    help="Set to 'on' to process all tasks")
   return parser
 
 if __name__ == '__main__':
@@ -285,8 +287,6 @@ if __name__ == '__main__':
     exit()
 
   while task:
-
-    logger.debug(task)
 
     # 2. Loading task data and creating input files
     indexes = load_task_data(task, options.algPassword
@@ -358,7 +358,8 @@ if __name__ == '__main__':
                             , task.PocketId
 							, results)
 
-    break
+    if options.batchMode != 'on': break
+    
     # 7. Requesting next task
     task = poligon.get_task(options.algSynonim
                             , options.algPassword)

@@ -3,8 +3,8 @@ import logging
 from datetime import datetime
 from ProcessingService_client import *
 
-#URL = 'http://poligon.machinelearning.ru/ProcessingService.asmx'
-URL = 'http://poligon.machinelearning.ru/TestService.asmx'
+URL = 'http://poligon.machinelearning.ru/ProcessingService.asmx'
+#URL = 'http://poligon.machinelearning.ru/TestService.asmx'
 
 TODAY = datetime.today()
 
